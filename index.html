@@ -1,0 +1,3042 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>DevCore - Plateforme de développement Discord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--
+        DevCore - Plateforme de services et développement Discord
+        - SPA (Single Page Application) en pur HTML / CSS / JavaScript
+        - Un seul fichier : index.html
+        - Design sombre moderne, inspiré de Discord
+        - Code commenté, extensible et structuré
+    -->
+
+    <style>
+        /* =========================
+           VARIABLES GLOBALES CSS
+           ========================= */
+        :root {
+            /* Palette principale inspirée de Discord */
+            --bg-main: #0f172a;
+            --bg-elevated: #111827;
+            --bg-elevated-2: #020617;
+            --bg-accent: #1d2433;
+            --bg-soft: #111827;
+            --primary: #5865F2;
+            --primary-soft: rgba(88,101,242,0.15);
+            --primary-hover: #4752c4;
+            --secondary: #22c55e;
+            --danger: #ef4444;
+            --text-main: #e5e7eb;
+            --text-soft: #9ca3af;
+            --border-subtle: #1f2937;
+            --card-radius: 14px;
+            --transition-fast: 0.18s ease-out;
+            --transition-medium: 0.25s ease-out;
+            --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+            --shadow-soft-sm: 0 10px 25px rgba(0,0,0,0.4);
+            --shadow-focus: 0 0 0 1px rgba(88,101,242,0.45), 0 0 0 6px rgba(88,101,242,0.18);
+        }
+
+        /* =========================
+           RESET DE BASE
+           ========================= */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #1e293b 0, #020617 52%, #020617 100%);
+            color: var(--text-main);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        /* =========================
+           DISPOSITION GLOBALE
+           ========================= */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =========================
+           BARRE LATÉRALE (DESKTOP)
+           ========================= */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #020617 0%, #020617 30%, #020617 100%);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            padding: 14px 12px 18px 12px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 10px 18px 10px;
+            border-bottom: 1px solid rgba(31,41,55,0.7);
+        }
+
+        .logo-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: conic-gradient(from 180deg, #4f46e5, #22c55e, #0ea5e9, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(88,101,242,0.8);
+        }
+
+        .logo-inner {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-title span:first-child {
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            font-size: 15px;
+        }
+
+        .sidebar-title span:last-child {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .nav-section-title {
+            margin: 16px 10px 8px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+        }
+
+        .nav-item {
+            margin: 3px 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 11px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #d1d5db;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), color 0.15s ease-out;
+        }
+
+        .nav-link-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 7px;
+            background: rgba(31,41,55,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .nav-link span {
+            flex: 1;
+        }
+
+        .nav-link .pill {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(22,163,74,0.12);
+            color: #4ade80;
+        }
+
+        .nav-link:hover {
+            background: rgba(31,41,55,0.9);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: radial-gradient(circle at 0 0, rgba(88,101,242,0.5), transparent 60%);
+            box-shadow: 0 0 0 1px rgba(88,101,242,0.5), 0 20px 40px rgba(15,23,42,0.9);
+            color: #ffffff;
+        }
+
+        .nav-link.active .nav-link-icon {
+            background: rgba(88,101,242,0.35);
+            color: #c7d2fe;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 12px 10px 6px 10px;
+            border-top: 1px solid rgba(31,41,55,0.8);
+            font-size: 11px;
+            color: #6b7280;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-footer-highlight {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            background: rgba(15,23,42,0.9);
+            border-radius: 999px;
+            padding: 6px 10px;
+            border: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .sidebar-footer-highlight span {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .sidebar-footer-highlight button {
+            background: var(--primary);
+            border-radius: 999px;
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .sidebar-footer-highlight button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(88,101,242,0.5);
+        }
+
+        /* =========================
+           ENTÊTE PRINCIPAL
+           ========================= */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 9;
+            background: linear-gradient(90deg, rgba(15,23,42,0.98), rgba(15,23,42,0.92));
+            border-bottom: 1px solid rgba(31,41,55,0.8);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 22px;
+        }
+
+        .topbar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .topbar-title {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .topbar-title strong {
+            color: #e5e7eb;
+        }
+
+        .topbar-subtitle {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 16px 35px rgba(88,101,242,0.65);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px) translateZ(0);
+            box-shadow: 0 18px 45px rgba(88,101,242,0.9);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-soft);
+            border: 1px solid rgba(55,65,81,0.9);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(15,23,42,0.85);
+            color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: rgba(31,41,55,0.9);
+            border: 1px solid rgba(55,65,81,0.9);
+            color: #9ca3af;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .btn-icon:hover {
+            background: rgba(17,24,39,0.95);
+            color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .topbar-badge {
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(22,163,74,0.18);
+            color: #4ade80;
+        }
+
+        /* =========================
+           CONTENU PRINCIPAL
+           ========================= */
+        .content {
+            flex: 1;
+            padding: 18px 22px 28px 22px;
+            overflow-y: auto;
+        }
+
+        .grid-main {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 18px;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .card {
+            background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.98));
+            border-radius: var(--card-radius);
+            border: 1px solid rgba(31,41,55,0.9);
+            box-shadow: var(--shadow-soft-sm);
+            padding: 16px 18px 18px 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: -120%;
+            opacity: 0;
+            background:
+                    radial-gradient(circle at 0% 0%, rgba(88,101,242,0.2), transparent 60%),
+                    radial-gradient(circle at 80% 120%, rgba(16,185,129,0.2), transparent 60%);
+            transition: opacity var(--transition-medium);
+            pointer-events: none;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(31,41,55,0.9);
+            color: #9ca3af;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+        }
+
+        .pill-soft {
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(55,65,81,0.85);
+            color: #e5e7eb;
+        }
+
+        .hero-main {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .hero-title {
+            font-size: 26px;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .hero-title span {
+            background: linear-gradient(120deg, #6366f1, #a855f7, #22c55e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-text {
+            font-size: 14px;
+            color: #9ca3af;
+            max-width: 620px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .hero-meta-item {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.95);
+            border: 1px solid rgba(55,65,81,0.9);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .stat-item {
+            background: rgba(15,23,42,0.95);
+            border-radius: 10px;
+            padding: 10px 10px;
+            border: 1px solid rgba(31,41,55,0.9);
+            font-size: 12px;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+        }
+
+        .stat-value {
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .stat-chip {
+            font-size: 11px;
+            margin-top: 4px;
+            color: #a5b4fc;
+        }
+
+        .orbit {
+            position: relative;
+            height: 230px;
+            border-radius: 18px;
+            background: radial-gradient(circle at 20% 0, rgba(88,101,242,0.3), transparent 55%), radial-gradient(circle at 100% 100%, rgba(34,197,94,0.35), transparent 50%), radial-gradient(circle at -20% 100%, rgba(56,189,248,0.35), transparent 60%);
+            overflow: hidden;
+            border: 1px solid rgba(51,65,85,0.95);
+        }
+
+        .orbit-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(15,23,42,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.7;
+        }
+
+        .orbit-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .orbit-core {
+            width: 76px;
+            height: 76px;
+            border-radius: 24px;
+            background: rgba(15,23,42,0.93);
+            border: 1px solid rgba(148,163,184,0.5);
+            box-shadow: 0 24px 80px rgba(15,23,42,1), 0 0 40px rgba(88,101,242,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .orbit-core-title {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .orbit-core-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .orbit-core-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+        }
+
+        .orbit-node {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: rgba(15,23,42,0.92);
+            border: 1px solid rgba(75,85,99,0.9);
+            box-shadow: 0 16px 40px rgba(15,23,42,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #e5e7eb;
+        }
+
+        .orbit-node-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, calc(-50% + 33px));
+            font-size: 10px;
+            white-space: nowrap;
+            color: #9ca3af;
+        }
+
+        .orbit-node.bot {
+            top: 22%;
+            left: 18%;
+        }
+
+        .orbit-node.server {
+            top: 67%;
+            left: 25%;
+        }
+
+        .orbit-node.github {
+            top: 20%;
+            right: 20%;
+        }
+
+        .orbit-node.community {
+            top: 65%;
+            right: 18%;
+        }
+
+        .orbit-node.pulse {
+            animation: pulse 2.4s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(88,101,242,0.75); }
+            70% { box-shadow: 0 0 0 10px rgba(88,101,242,0); }
+            100% { box-shadow: 0 0 0 0 rgba(88,101,242,0); }
+        }
+
+        /* =========================
+           SECTIONS SPA
+           ========================= */
+        .spa-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity var(--transition-medium), transform var(--transition-medium);
+        }
+
+        .spa-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .section-layout-full {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 12px;
+        }
+
+        .section-kicker {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        /* =========================
+           FORMULAIRES GÉNÉRAUX
+           ========================= */
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 13px;
+        }
+
+        .form-group label {
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-label-hint {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        textarea,
+        select {
+            background: rgba(15,23,42,0.95);
+            border-radius: 10px;
+            border: 1px solid rgba(31,41,55,0.9);
+            color: #e5e7eb;
+            padding: 8px 10px;
+            font-size: 13px;
+            outline: none;
+            transition: border var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: rgba(88,101,242,0.6);
+            box-shadow: var(--shadow-focus);
+            background: rgba(15,23,42,1);
+            transform: translateY(-1px);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #6b7280;
+        }
+
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group-inline label {
+            margin: 0;
+        }
+
+        .form-group-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #e5e7eb;
+        }
+
+        .form-group small {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .error-message {
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 2px;
+        }
+
+        .success-message {
+            font-size: 12px;
+            color: #4ade80;
+            margin-top: 6px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, rgba(31,41,55,0), rgba(31,41,55,0.9), rgba(31,41,55,0));
+            margin: 10px 0;
+        }
+
+        .section-footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* =========================
+           LISTES & CARTES
+           ========================= */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .feature-card {
+            background: rgba(15,23,42,0.95);
+            border-radius: 12px;
+            border: 1px solid rgba(31,41,55,0.95);
+            padding: 12px 11px 11px 11px;
+            font-size: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium), background var(--transition-medium);
+            cursor: default;
+        }
+
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: conic-gradient(rgba(88,101,242,0.5), transparent, rgba(34,197,94,0.4), transparent, rgba(59,130,246,0.5));
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+            mix-blend-mode: screen;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(88,101,242,0.7);
+            box-shadow: var(--shadow-soft);
+            background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.98));
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 9px;
+            background: rgba(31,41,55,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .feature-title {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .feature-tag {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        /* =========================
+           PAGE PROJETS
+           ========================= */
+        .project-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .project-item {
+            background: rgba(15,23,42,0.95);
+            border-radius: 10px;
+            border: 1px solid rgba(31,41,55,0.9);
+            padding: 10px 10px;
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 8px;
+        }
+
+        .project-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .project-description {
+            font-size: 12px;
+            color: #e5e7eb;
+        }
+
+        /* =========================
+           PAGE AVIS
+           ========================= */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .review-card {
+            background: rgba(15,23,42,0.95);
+            border-radius: 12px;
+            border: 1px solid rgba(31,41,55,0.9);
+            padding: 10px 11px 9px 11px;
+            font-size: 12px;
+            position: relative;
+            overflow: hidden;
+            transform-origin: center;
+            animation: review-enter 0.35s ease-out;
+        }
+
+        @keyframes review-enter {
+            0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .review-author {
+            font-weight: 500;
+        }
+
+        .review-stars {
+            color: #facc15;
+            font-size: 12px;
+        }
+
+        .review-text {
+            color: #e5e7eb;
+            margin-bottom: 4px;
+        }
+
+        .review-meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .rating-input {
+            display: inline-flex;
+            gap: 3px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .rating-input span {
+            transition: transform var(--transition-fast), color var(--transition-fast);
+        }
+
+        .rating-input span.active {
+            color: #facc15;
+            transform: scale(1.1);
+        }
+
+        /* =========================
+           PAGE FAQ
+           ========================= */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .faq-item {
+            background: rgba(15,23,42,0.95);
+            border-radius: 10px;
+            border: 1px solid rgba(31,41,55,0.9);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 9px 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .faq-question span {
+            font-weight: 500;
+        }
+
+        .faq-toggle {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(55,65,81,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #9ca3af;
+            transition: background var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .faq-question:hover .faq-toggle {
+            background: rgba(31,41,55,0.96);
+            transform: rotate(90deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease-out, padding 0.2s ease-out;
+            font-size: 12px;
+            color: #9ca3af;
+            padding: 0 11px;
+        }
+
+        .faq-item.open .faq-answer {
+            padding: 6px 11px 9px 11px;
+            max-height: 200px;
+        }
+
+        /* =========================
+           PAGE DEMANDE DE SERVEUR
+           ========================= */
+        .request-summary {
+            margin-top: 8px;
+            font-size: 12px;
+            background: rgba(15,23,42,0.95);
+            border-radius: 10px;
+            border: 1px solid rgba(31,41,55,0.9);
+            padding: 9px 10px;
+        }
+
+        .request-summary-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .request-summary-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .request-summary-item span:first-child {
+            color: #9ca3af;
+        }
+
+        /* =========================
+           MODALE GÉNÉRIQUE
+           ========================= */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 480px;
+            background: radial-gradient(circle at top, rgba(15,23,42,1), rgba(15,23,42,0.98));
+            border-radius: 18px;
+            border: 1px solid rgba(51,65,85,0.95);
+            box-shadow: 0 22px 60px rgba(0,0,0,0.95);
+            padding: 16px 18px 14px 18px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            font-size: 13px;
+            color: #d1d5db;
+            margin-bottom: 8px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+        }
+
+        /* =========================
+           UTILITAIRES & STATUTS
+           ========================= */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            background: rgba(31,41,55,0.95);
+            color: #9ca3af;
+        }
+
+        .chip-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #22c55e;
+        }
+
+        .notice {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(31,41,55,0.95);
+            color: #9ca3af;
+        }
+
+        .tag-primary {
+            background: rgba(88,101,242,0.2);
+            color: #c7d2fe;
+        }
+
+        .tag-danger {
+            background: rgba(239,68,68,0.2);
+            color: #fecaca;
+        }
+
+        .tag-success {
+            background: rgba(34,197,94,0.25);
+            color: #bbf7d0;
+        }
+
+        .muted {
+            color: #9ca3af;
+        }
+
+        .text-xs {
+            font-size: 11px;
+        }
+
+        .mt-2 { margin-top: 8px; }
+        .mt-3 { margin-top: 12px; }
+        .mt-4 { margin-top: 16px; }
+
+        .text-center { text-align: center; }
+
+        /* =========================
+           RESPONSIVE
+           ========================= */
+        .topbar-toggle {
+            display: none;
+        }
+
+        @media (max-width: 960px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                display: none;
+                width: 100%;
+                position: fixed;
+                inset: 48px 0 auto 0;
+                z-index: 30;
+                border-right: none;
+                border-bottom: 1px solid rgba(31,41,55,0.9);
+                padding: 8px 10px 10px 10px;
+            }
+
+            .sidebar.open {
+                display: flex;
+            }
+
+            .topbar {
+                z-index: 40;
+            }
+
+            .topbar-toggle {
+                display: inline-flex;
+            }
+
+            .content {
+                padding: 10px 12px 18px 12px;
+            }
+
+            .grid-main {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .section-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .reviews-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .project-item {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .topbar-left {
+                max-width: 60%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .features-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .form-row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* Petites optimisations d’animations pour accesibilité */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell" id="appShell">
+    <!-- =========================
+         BARRE LATÉRALE (NAVIGATION SPA)
+         ========================= -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-circle">
+                <div class="logo-inner">DC</div>
+            </div>
+            <div class="sidebar-title">
+                <span>DevCore</span>
+                <span>Plateforme Discord Dev</span>
+            </div>
+        </div>
+
+        <div class="nav-section-title">Navigation</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <button class="nav-link active" data-section="home">
+                    <div class="nav-link-icon">🏠</div>
+                    <span>Accueil</span>
+                    <span class="pill">Vue globale</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="features">
+                    <div class="nav-link-icon">✨</div>
+                    <span>Fonctionnalités</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="bot">
+                    <div class="nav-link-icon">🤖</div>
+                    <span>Création de bot</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="server">
+                    <div class="nav-link-icon">🛠️</div>
+                    <span>Demande de serveur</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="projects">
+                    <div class="nav-link-icon">📂</div>
+                    <span>Projets</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="reviews">
+                    <div class="nav-link-icon">⭐</div>
+                    <span>Avis</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="faq">
+                    <div class="nav-link-icon">❓</div>
+                    <span>FAQ</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-section="contact">
+                    <div class="nav-link-icon">📨</div>
+                    <span>Contact</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Raccourcis</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <button class="nav-link" id="shortcutCreateBot">
+                    <div class="nav-link-icon">🚀</div>
+                    <span>Créer un bot Discord</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="shortcutRequestServer">
+                    <div class="nav-link-icon">🎛️</div>
+                    <span>Demander un serveur</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-highlight">
+                <span>Statut: <strong style="color:#bbf7d0;">en bêta contrôlée</strong></span>
+                <button id="openChangelogBtn">Journal</button>
+            </div>
+            <span>DevCore n'est pas affilié à Discord. Utilise le portail officiel pour la création d'applications.</span>
+        </div>
+    </aside>
+
+    <!-- =========================
+         CONTENU PRINCIPAL
+         ========================= -->
+    <div class="main">
+        <!-- ENTÊTE -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">
+                    Espace <strong id="currentSectionLabel">Accueil</strong>
+                    <span class="topbar-badge">Vue en temps réel (client)</span>
+                </div>
+                <div class="topbar-subtitle">
+                    DevCore centralise la création de bots, la conception de serveurs Discord et la gestion de projets communautaires.
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-ghost btn" id="btnTopCreateBot">
+                    <span>Créer un bot</span>
+                </button>
+                <button class="btn-primary btn" id="btnTopRequestServer">
+                    <span>Demander un serveur</span>
+                </button>
+                <button class="btn-icon topbar-toggle" id="sidebarToggle" aria-label="Ouvrir la navigation">
+                    ☰
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENU -->
+        <main class="content">
+            <!-- SECTION ACCUEIL -->
+            <section class="spa-section active" id="section-home">
+                <div class="grid-main">
+                    <!-- Colonne gauche : hero -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Bienvenue sur DevCore</div>
+                                <div class="card-subtitle">
+                                    Une plateforme tout-en-un pour concevoir votre écosystème Discord : bots, serveurs, projets & communauté.
+                                </div>
+                            </div>
+                            <span class="badge">
+                                <span class="badge-dot"></span> En ligne
+                            </span>
+                        </div>
+
+                        <div class="hero-main">
+                            <div class="hero-title">
+                                Construis ta <span>stack Discord</span> comme un·e pro.
+                            </div>
+                            <p class="hero-text">
+                                DevCore centralise les outils nécessaires pour lancer et maintenir un projet Discord sérieux :
+                                génération de bots, création de serveurs structurés, accompagnement technique et collaboration
+                                entre développeurs.
+                            </p>
+
+                            <div class="hero-actions">
+                                <button class="btn btn-primary" id="heroCreateBotBtn">
+                                    🤖 Créer un bot Discord
+                                </button>
+                                <button class="btn btn-ghost" id="heroRequestServerBtn">
+                                    🛠️ Demander un serveur clé en main
+                                </button>
+                            </div>
+
+                            <div class="hero-meta">
+                                <div class="hero-meta-item">Temps moyen de mise en place d'un bot : <strong>&lt; 20 min*</strong></div>
+                                <div class="hero-meta-item">Compatibilité : <strong>Discord API v10, GitHub Actions</strong></div>
+                                <div class="hero-meta-item">Assistance communautaire 24/7 (sur Discord)</div>
+                            </div>
+
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <div class="stat-label">BOTS GÉRÉS</div>
+                                    <div class="stat-value" id="statBots">48</div>
+                                    <div class="stat-chip">Mises à jour automatiques</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">SERVEURS CONÇUS</div>
+                                    <div class="stat-value" id="statServers">32</div>
+                                    <div class="stat-chip">Templates personnalisés</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">PROJETS ACTIFS</div>
+                                    <div class="stat-value" id="statProjects">12</div>
+                                    <div class="stat-chip">Open source & privés</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne droite : visuel dynamique -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Vue d’ensemble technique</div>
+                                <div class="card-subtitle">Suivi de ton écosystème Discord en temps réel (données simulées côté client).</div>
+                            </div>
+                            <span class="pill-soft">Client-side mock</span>
+                        </div>
+
+                        <div class="orbit">
+                            <div class="orbit-grid"></div>
+                            <div class="orbit-center">
+                                <div class="orbit-core">
+                                    <div class="orbit-core-title">Noyau DevCore</div>
+                                    <div class="orbit-core-value">Orchestrateur</div>
+                                    <div class="orbit-core-badge">Bots · Serveurs · Projets</div>
+                                </div>
+                            </div>
+
+                            <div class="orbit-node bot">
+                                🤖
+                                <div class="orbit-node-label">Bots Discord</div>
+                            </div>
+                            <div class="orbit-node server">
+                                🛠️
+                                <div class="orbit-node-label">Serveurs clés en main</div>
+                            </div>
+                            <div class="orbit-node github">
+                                🧬
+                                <div class="orbit-node-label">GitHub & CI</div>
+                            </div>
+                            <div class="orbit-node community orbit-node.pulse">
+                                👥
+                                <div class="orbit-node-label">Communauté Dev</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 notice">
+                            *Toutes les données d'activité sont simulées en local pour démonstration. DevCore peut être connecté
+                            à de vraies métriques via des webhooks, des workers ou des intégrations GitHub.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION FONCTIONNALITÉS -->
+            <section class="spa-section" id="section-features">
+                <div class="card section-layout-full">
+                    <div class="section-header">
+                        <div class="section-kicker">Vue produit</div>
+                        <div class="section-title">Fonctionnalités principales de DevCore</div>
+                        <div class="section-subtitle">
+                            Une plateforme pensée pour les développeurs, les équipes communautaires et les studios qui veulent
+                            industrialiser leur présence Discord.
+                        </div>
+                    </div>
+
+                    <div class="features-grid">
+                        <article class="feature-card">
+                            <div class="feature-icon">🤖</div>
+                            <div class="feature-title">Création de bots Discord</div>
+                            <div class="feature-tag">Génération de liens OAuth2, gestion des permissions et guides étape par étape.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">🛠️</div>
+                            <div class="feature-title">Création de serveurs sur demande</div>
+                            <div class="feature-tag">Formulaire détaillé pour des serveurs structurés et adaptés à ton objectif.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">📚</div>
+                            <div class="feature-title">Configuration automatique de salons</div>
+                            <div class="feature-tag">Arborescences types (gaming, RP, dev, communauté) prêtes à être déployées.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">🧑‍💻</div>
+                            <div class="feature-title">Support & accompagnement</div>
+                            <div class="feature-tag">Guides, exemples, et validation manuelle des configurations critiques.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">🤝</div>
+                            <div class="feature-title">Collaboration communautaire</div>
+                            <div class="feature-tag">Propose des projets, rejoins des équipes, mutualise bots et templates.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">🧬</div>
+                            <div class="feature-title">Compatibilité GitHub</div>
+                            <div class="feature-tag">Organisation, issues, actions CI/CD et intégration webhooks Discord.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-title">Plateforme évolutive</div>
+                            <div class="feature-tag">Pensée pour supporter plusieurs projets Discord en parallèle.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">🔐</div>
+                            <div class="feature-title">Bonnes pratiques sécurité</div>
+                            <div class="feature-tag">Principes de gestion de tokens, permissions minimales et logs.</div>
+                        </article>
+
+                        <article class="feature-card">
+                            <div class="feature-icon">⚙️</div>
+                            <div class="feature-title">API & Webhooks (concept)</div>
+                            <div class="feature-tag">Architecture prête pour connecter des APIs backend ou workers externes.</div>
+                        </article>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-footer-actions">
+                        <button class="btn btn-ghost" id="featuresToBotBtn">Explorer la création de bot</button>
+                        <button class="btn btn-primary" id="featuresToServerBtn">Demander un serveur Discord</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION CRÉATION DE BOT DISCORD -->
+            <section class="spa-section" id="section-bot">
+                <div class="section-layout">
+                    <!-- Colonne gauche : guide -->
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-kicker">Guides & outils</div>
+                            <div class="section-title">Création d’un bot Discord</div>
+                            <div class="section-subtitle">
+                                Suis ce guide étape par étape pour créer ton bot sur le portail développeur
+                                Discord, configurer les permissions et générer un lien d’invitation sûr.
+                            </div>
+                        </div>
+
+                        <ol class="text-xs" style="list-style: decimal; padding-left:16px; color:#e5e7eb;">
+                            <li class="mt-2">
+                                <strong>Créer une application Discord</strong><br>
+                                Connecte-toi au <span class="tag tag-primary">Discord Developer Portal</span>, crée une nouvelle
+                                application et active le module « Bot ».
+                            </li>
+                            <li class="mt-2">
+                                <strong>Configurer le bot</strong><br>
+                                Donne-lui un nom explicite, choisis une image, active les intentions (Gateway Intents)
+                                nécessaires en fonction de ton usage.
+                            </li>
+                            <li class="mt-2">
+                                <strong>Générer le token</strong><br>
+                                Garde le token secret (ne jamais le publier). DevCore ne stocke pas tes tokens : tout se fait côté
+                                client.
+                            </li>
+                            <li class="mt-2">
+                                <strong>Configurer l’OAuth2</strong><br>
+                                Choisis les scopes <span class="tag">bot</span> et <span class="tag">applications.commands</span>,
+                                définis les permissions minimales nécessaires au bot.
+                            </li>
+                            <li class="mt-2">
+                                <strong>Inviter le bot sur ton serveur</strong><br>
+                                Utilise le lien généré ci-dessous pour inviter ton bot sur un ou plusieurs serveurs.
+                            </li>
+                        </ol>
+
+                        <div class="mt-3">
+                            <button class="btn btn-primary" id="openDiscordPortalBtn">
+                                🔗 Ouvrir le Discord Developer Portal
+                            </button>
+                        </div>
+
+                        <p class="notice mt-2">
+                            DevCore se contente de t’assister dans la génération du lien d’invitation. Tu restes propriétaire de
+                            ton application et de sa sécurité.
+                        </p>
+                    </div>
+
+                    <!-- Colonne droite : générateur OAuth2 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Générateur de lien d’invitation OAuth2</div>
+                                <div class="card-subtitle">
+                                    Indique l’ID client de ton application et sélectionne les permissions souhaitées.
+                                </div>
+                            </div>
+                            <span class="chip">
+                                <span class="chip-dot"></span> Local only
+                            </span>
+                        </div>
+
+                        <form class="form" id="oauthForm">
+                            <div class="form-group">
+                                <label for="clientIdInput">
+                                    ID client (Application ID)
+                                    <span class="form-label-hint">Obtenu via le portail développeur</span>
+                                </label>
+                                <input type="text" id="clientIdInput" placeholder="Ex : 123456789012345678" autocomplete="off">
+                                <div class="error-message" id="clientIdError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Scopes</label>
+                                <div class="form-group-inline">
+                                    <div class="form-group-checkbox">
+                                        <input type="checkbox" id="scopeBot" checked>
+                                        <label for="scopeBot">bot</label>
+                                    </div>
+                                    <div class="form-group-checkbox">
+                                        <input type="checkbox" id="scopeCommands" checked>
+                                        <label for="scopeCommands">applications.commands</label>
+                                    </div>
+                                </div>
+                                <small>DevCore recommande ces deux scopes pour les bots modernes (slash commands).</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="permissionsSelect">
+                                    Permissions recommandées
+                                    <span class="form-label-hint">Sélection rapide</span>
+                                </label>
+                                <select id="permissionsSelect">
+                                    <option value="0">Aucune (débogage / développement)</option>
+                                    <option value="274877908992">Administrateur (attention)</option>
+                                    <option value="2147485696">Modération avancée</option>
+                                    <option value="268437520">Gestion de messages & salons</option>
+                                    <option value="536870912">Gestion de slash commands uniquement</option>
+                                </select>
+                                <small>
+                                    Tu peux ajuster manuellement la valeur de permissions ci-dessous si nécessaire.
+                                </small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="permissionsValue">Permissions (valeur brute)</label>
+                                    <input type="number" id="permissionsValue" min="0" step="1" value="268437520">
+                                </div>
+                                <div class="form-group">
+                                    <label for="redirectUriInput">
+                                        Redirect URI (optionnel)
+                                        <span class="form-label-hint">Pour flux avancé</span>
+                                    </label>
+                                    <input type="text" id="redirectUriInput" placeholder="https://exemple.com/callback (facultatif)">
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="form-group">
+                                <label>Lien généré</label>
+                                <textarea id="oauthUrlOutput" readonly placeholder="Le lien s'affichera ici après génération."></textarea>
+                                <small class="notice">
+                                    Vérifie toujours les permissions avant de partager ce lien. Ne jamais confier d'accès non
+                                    nécessaires à un bot.
+                                </small>
+                            </div>
+
+                            <div class="section-footer-actions">
+                                <button type="button" class="btn btn-ghost" id="btnResetOAuth">Réinitialiser</button>
+                                <button type="button" class="btn btn-primary" id="btnGenerateOAuth">Générer le lien</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION DEMANDE DE SERVEUR DISCORD -->
+            <section class="spa-section" id="section-server">
+                <div class="section-layout">
+                    <!-- Colonne gauche : explication -->
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-kicker">Service clé en main</div>
+                            <div class="section-title">Demande de création de serveur Discord</div>
+                            <div class="section-subtitle">
+                                Décris précisément le serveur dont tu as besoin. DevCore formalise ta demande et te fournit
+                                une configuration prête à être appliquée sur Discord.
+                            </div>
+                        </div>
+
+                        <p class="text-xs muted">
+                            Tu peux utiliser ce formulaire pour spécifier :
+                        </p>
+                        <ul class="text-xs" style="color:#e5e7eb; padding-left:16px;">
+                            <li>l’objectif de ton serveur (gaming, communauté, RP, dev, studio, etc.) ;</li>
+                            <li>le style visuel et la tonalité (pro, fun, sérieux, minimaliste, etc.) ;</li>
+                            <li>le volume attendu de membres et le niveau de modération souhaité ;</li>
+                            <li>les bots nécessaires (modération, musique, logs, intégration GitHub, etc.).</li>
+                        </ul>
+
+                        <p class="notice mt-3">
+                            Le traitement est simulé côté client : les demandes sont stockées dans ta session
+                            et tu peux consulter un récapitulatif détaillé ci-contre. Dans un vrai déploiement, ce
+                            formulaire déclencherait un ticket ou un webhook vers ton équipe.
+                        </p>
+
+                        <div class="mt-3 chip">
+                            <span class="chip-dot"></span>
+                            Aucune donnée envoyée côté serveur : démonstration front-end uniquement.
+                        </div>
+                    </div>
+
+                    <!-- Colonne droite : formulaire -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Formulaire de demande de serveur Discord</div>
+                                <div class="card-subtitle">
+                                    Tous les champs principaux sont validés côté client. Un récapitulatif est affiché après envoi.
+                                </div>
+                            </div>
+                            <span class="tag tag-success">Formulaire actif</span>
+                        </div>
+
+                        <form class="form" id="serverRequestForm">
+                            <!-- Nom, thème -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="serverName">Nom du serveur</label>
+                                    <input type="text" id="serverName" placeholder="Ex : DevCore Hub">
+                                    <div class="error-message" id="serverNameError"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="serverTheme">Thème du serveur</label>
+                                    <input type="text" id="serverTheme" placeholder="Ex : Développement, Gaming, RP futuriste...">
+                                    <div class="error-message" id="serverThemeError"></div>
+                                </div>
+                            </div>
+
+                            <!-- Objectif, membres -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="serverObjective">Objectif principal</label>
+                                    <select id="serverObjective">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Communauté générale">Communauté générale</option>
+                                        <option value="Gaming">Gaming</option>
+                                        <option value="Développement / Tech">Développement / Tech</option>
+                                        <option value="RP (Roleplay)">RP (Roleplay)</option>
+                                        <option value="Projet / Startup">Projet / Startup</option>
+                                        <option value="Équipe / Studio">Équipe / Studio</option>
+                                    </select>
+                                    <div class="error-message" id="serverObjectiveError"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="serverMembers">Nombre estimé de membres</label>
+                                    <input type="number" id="serverMembers" min="1" max="100000" placeholder="Ex : 150">
+                                    <div class="error-message" id="serverMembersError"></div>
+                                </div>
+                            </div>
+
+                            <!-- Style, bots -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="serverStyle">Style souhaité</label>
+                                    <select id="serverStyle">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Professionnel">Professionnel</option>
+                                        <option value="Fun">Fun</option>
+                                        <option value="Gaming">Gaming</option>
+                                        <option value="Sérieux / modéré">Sérieux / modéré</option>
+                                        <option value="Minimaliste">Minimaliste</option>
+                                    </select>
+                                    <div class="error-message" id="serverStyleError"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Besoins en bots</label>
+                                    <div class="form-group-inline">
+                                        <div class="form-group-checkbox">
+                                            <input type="checkbox" id="botsNeeded">
+                                            <label for="botsNeeded">Oui, j'ai besoin de bots</label>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="botsType" placeholder="Ex : modération, musique, tickets, logs..." style="margin-top:6px;">
+                                    <div class="error-message" id="botsTypeError"></div>
+                                </div>
+                            </div>
+
+                            <!-- Description libre -->
+                            <div class="form-group">
+                                <label for="serverDescription">Description libre</label>
+                                <textarea id="serverDescription" placeholder="Décris la structure idéale, les rôles, catégories, règles, etc."></textarea>
+                                <div class="error-message" id="serverDescriptionError"></div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="section-footer-actions">
+                                <button type="button" class="btn btn-ghost" id="resetServerFormBtn">Réinitialiser</button>
+                                <button type="submit" class="btn btn-primary" id="submitServerFormBtn">Envoyer la demande</button>
+                            </div>
+
+                            <div class="success-message" id="serverFormSuccess"></div>
+                        </form>
+
+                        <div class="request-summary mt-2" id="serverRequestSummary" style="display:none;">
+                            <div class="request-summary-title">Récapitulatif de ta demande</div>
+                            <div id="serverRequestSummaryContent"></div>
+                            <div class="mt-2 notice">
+                                Cette demande est stockée uniquement dans ta session navigateur. Tu peux l’exporter ou la copier
+                                dans un ticket support Discord.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION PROJETS -->
+            <section class="spa-section" id="section-projects">
+                <div class="section-layout">
+                    <!-- Colonne gauche : formulaire de projet -->
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-kicker">Espace projets</div>
+                            <div class="section-title">Proposer un projet communautaire</div>
+                            <div class="section-subtitle">
+                                Dépose une idée de bot, de serveur ou d’outil Discord. Les projets sont listés
+                                ci-contre et restent visibles dans ta session.
+                            </div>
+                        </div>
+
+                        <form class="form" id="projectForm">
+                            <div class="form-group">
+                                <label for="projectName">Nom du projet</label>
+                                <input type="text" id="projectName" placeholder="Ex : Bot de tickets pour studio indie">
+                                <div class="error-message" id="projectNameError"></div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="projectType">Type de projet</label>
+                                    <select id="projectType">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Bot Discord">Bot Discord</option>
+                                        <option value="Serveur Discord">Serveur Discord</option>
+                                        <option value="Outil externe/API">Outil externe/API</option>
+                                        <option value="Template / Ressource">Template / Ressource</option>
+                                    </select>
+                                    <div class="error-message" id="projectTypeError"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="projectTech">Technologies principales</label>
+                                    <input type="text" id="projectTech" placeholder="Ex : Node.js, TypeScript, MongoDB">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="projectDescription">Description du projet</label>
+                                <textarea id="projectDescription" placeholder="Explique le but du projet, les fonctionnalités clés et les besoins en collaborateurs."></textarea>
+                                <div class="error-message" id="projectDescriptionError"></div>
+                            </div>
+
+                            <div class="section-footer-actions">
+                                <button type="button" class="btn btn-ghost" id="resetProjectFormBtn">Effacer</button>
+                                <button type="submit" class="btn btn-primary">Ajouter le projet</button>
+                            </div>
+                            <div class="success-message" id="projectFormSuccess"></div>
+                        </form>
+                    </div>
+
+                    <!-- Colonne droite : liste des projets -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Projets proposés</div>
+                                <div class="card-subtitle">
+                                    Liste locale des projets que tu ajoutes. Idéal pour organiser tes idées avant de les pousser sur GitHub.
+                                </div>
+                            </div>
+                            <span class="tag">Stockage client</span>
+                        </div>
+
+                        <div class="project-list" id="projectList">
+                            <!-- Eléments ajoutés dynamiquement -->
+                        </div>
+
+                        <p class="notice mt-2">
+                            Astuce : Tu peux copier/coller ces fiches projet vers un dépôt GitHub, un
+                            forum ou un salon Discord de recrutement.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION AVIS -->
+            <section class="spa-section" id="section-reviews">
+                <div class="section-layout">
+                    <!-- Colonne gauche : formulaire avis -->
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-kicker">Retour d’expérience</div>
+                            <div class="section-title">Laisser un avis</div>
+                            <div class="section-subtitle">
+                                Simule l’ajout d’un avis sur DevCore. Les avis sont animés et stockés
+                                uniquement dans ta session.
+                            </div>
+                        </div>
+
+                        <form class="form" id="reviewForm">
+                            <div class="form-group">
+                                <label for="reviewAuthor">Pseudo / Nom</label>
+                                <input type="text" id="reviewAuthor" placeholder="Ex : NexusDev#1024">
+                                <div class="error-message" id="reviewAuthorError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Note globale</label>
+                                <div class="rating-input" id="reviewRatingInput">
+                                    <span data-value="1">★</span>
+                                    <span data-value="2">★</span>
+                                    <span data-value="3">★</span>
+                                    <span data-value="4">★</span>
+                                    <span data-value="5">★</span>
+                                </div>
+                                <input type="hidden" id="reviewRating" value="5">
+                                <small>Cliquer sur les étoiles pour définir la note.</small>
+                                <div class="error-message" id="reviewRatingError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reviewText">Ton avis</label>
+                                <textarea id="reviewText" placeholder="Décris ton expérience avec la plateforme ou le concept."></textarea>
+                                <div class="error-message" id="reviewTextError"></div>
+                            </div>
+
+                            <div class="section-footer-actions">
+                                <button type="button" class="btn btn-ghost" id="resetReviewFormBtn">Annuler</button>
+                                <button type="submit" class="btn btn-primary">Publier l’avis</button>
+                            </div>
+                            <div class="success-message" id="reviewFormSuccess"></div>
+                        </form>
+                    </div>
+
+                    <!-- Colonne droite : liste d’avis -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Avis de la communauté</div>
+                                <div class="card-subtitle">
+                                    Ces avis sont fictifs et stockés localement. Ils démontrent l’affichage
+                                    et l’animation de cartes d’avis clients.
+                                </div>
+                            </div>
+                            <span class="tag tag-primary">Mock UX</span>
+                        </div>
+
+                        <div class="reviews-grid" id="reviewList">
+                            <!-- Avis pré-remplis et nouvel avis ajoutés en JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION FAQ -->
+            <section class="spa-section" id="section-faq">
+                <div class="card section-layout-full">
+                    <div class="section-header">
+                        <div class="section-kicker">Informations clés</div>
+                        <div class="section-title">FAQ DevCore</div>
+                        <div class="section-subtitle">
+                            Questions fréquentes sur les bots Discord, les serveurs gérés, la sécurité, les délais et le
+                            fonctionnement général de la plateforme.
+                        </div>
+                    </div>
+
+                    <div class="faq-list" id="faqList">
+                        <!-- FAQ dynamiques -->
+                    </div>
+
+                    <p class="notice mt-3">
+                        Cette FAQ est gérée côté client via un système d'accordéon. Elle peut facilement être reliée à une
+                        base de connaissances ou à un CMS dans une version backend.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SECTION CONTACT -->
+            <section class="spa-section" id="section-contact">
+                <div class="section-layout">
+                    <!-- Colonne gauche : formulaire de contact -->
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-kicker">Entrer en contact</div>
+                            <div class="section-title">Formulaire de contact</div>
+                            <div class="section-subtitle">
+                                Pour toute question, idée d’évolution ou demande de collaboration autour
+                                de DevCore (concept), utilise ce formulaire.
+                            </div>
+                        </div>
+
+                        <form class="form" id="contactForm">
+                            <div class="form-group">
+                                <label for="contactName">Nom / Pseudo</label>
+                                <input type="text" id="contactName" placeholder="Ex : StudioNova / Aki#2048">
+                                <div class="error-message" id="contactNameError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactEmail">Adresse e-mail</label>
+                                <input type="email" id="contactEmail" placeholder="Ex : contact@tondomaine.fr">
+                                <div class="error-message" id="contactEmailError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactReason">Sujet</label>
+                                <select id="contactReason">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Demande d'informations">Demande d'informations</option>
+                                    <option value="Collaboration / Partenariat">Collaboration / Partenariat</option>
+                                    <option value="Bug / Problème technique">Bug / Problème technique</option>
+                                    <option value="Suggestion de fonctionnalité">Suggestion de fonctionnalité</option>
+                                </select>
+                                <div class="error-message" id="contactReasonError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactMessage">Message</label>
+                                <textarea id="contactMessage" placeholder="Décris ta demande de manière claire et concise."></textarea>
+                                <div class="error-message" id="contactMessageError"></div>
+                            </div>
+
+                            <div class="section-footer-actions">
+                                <button type="button" class="btn btn-ghost" id="resetContactFormBtn">Effacer</button>
+                                <button type="submit" class="btn btn-primary">Envoyer le message</button>
+                            </div>
+                            <div class="success-message" id="contactFormSuccess"></div>
+                        </form>
+                    </div>
+
+                    <!-- Colonne droite : infos -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Comment fonctionne DevCore ?</div>
+                                <div class="card-subtitle">
+                                    Aperçu du fonctionnement actuel (démonstration front-end) et
+                                    de ce que pourrait devenir une version de production.
+                                </div>
+                            </div>
+                            <span class="tag">Concept</span>
+                        </div>
+
+                        <ul class="text-xs" style="color:#e5e7eb; padding-left:16px;">
+                            <li><strong>Version actuelle :</strong> SPA purement front-end, aucune donnée transmise à un serveur.</li>
+                            <li><strong>Version production :</strong> endpoints sécurisés, base de données, authentification Discord OAuth2.</li>
+                            <li><strong>Serveurs :</strong> système de tickets, templates versionnés, logs d’actions.</li>
+                            <li><strong>Bots :</strong> dépôt GitHub, CI/CD, déploiements automatisés.</li>
+                            <li><strong>Communauté :</strong> serveur Discord central, salons de support, salons projets.</li>
+                        </ul>
+
+                        <p class="notice mt-2">
+                            Ce prototype met l’accent sur l’expérience utilisateur et la structure du code.
+                            Il est pensé pour être relié par la suite à des API réelles.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- =========================
+     MODALE JOURNAL (CHANGELOG)
+     ========================= -->
+<div class="modal-backdrop" id="changelogModal">
+    <div class="modal">
+        <button class="btn-icon modal-close" id="closeChangelogBtn">✕</button>
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">Journal de la plateforme DevCore</div>
+                <div class="text-xs muted">Aperçu fictif des évolutions de la plateforme.</div>
+            </div>
+            <span class="tag tag-primary">v0.1.0 (prototype)</span>
+        </div>
+        <div class="modal-body">
+            <ul class="text-xs" style="padding-left:16px;">
+                <li><strong>Nouvelle interface sombre :</strong> thème inspiré de Discord, entièrement responsive.</li>
+                <li><strong>Navigation SPA :</strong> toutes les sections sont affichées/masquées sans rechargement de page.</li>
+                <li><strong>Formulaire de demande de serveur :</strong> validation client, stockage local de la demande et récapitulatif.</li>
+                <li><strong>Générateur OAuth2 :</strong> création dynamique de liens d’invitation pour bots Discord.</li>
+                <li><strong>Gestion des projets et avis :</strong> listes dynamiques, animations d’apparition, stockage en mémoire.</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="changelogLaterBtn">Voir plus tard</button>
+            <button class="btn btn-primary" id="changelogOkBtn">Compris</button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================
+     JAVASCRIPT - LOGIQUE SPA
+     ========================= -->
+<script>
+    // ===============================
+    // UTILITAIRES GÉNÉRAUX
+    // ===============================
+
+    /**
+     * Sélecteur utilitaire
+     * @param {string} sel
+     * @returns {HTMLElement}
+     */
+    const $ = (sel) => document.querySelector(sel);
+
+    /**
+     * Sélecteur multiple utilitaire
+     * @param {string} sel
+     * @returns {NodeListOf<HTMLElement>}
+     */
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    /**
+     * Affiche une section SPA et met à jour la navigation + l'entête.
+     * @param {string} sectionId - ID de la section (home, features, bot, etc.)
+     */
+    function showSection(sectionId) {
+        const targetId = `section-${sectionId}`;
+        const sections = $$('.spa-section');
+        sections.forEach(sec => {
+            if (sec.id === targetId) {
+                sec.classList.add('active');
+            } else {
+                sec.classList.remove('active');
+            }
+        });
+
+        // Mettre à jour les liens actifs
+        $$('.nav-link').forEach(link => {
+            const linkSection = link.getAttribute('data-section');
+            link.classList.toggle('active', linkSection === sectionId);
+        });
+
+        // Mettre à jour le label dans la topbar
+        const mapLabels = {
+            home: 'Accueil',
+            features: 'Fonctionnalités',
+            bot: 'Création de bot',
+            server: 'Demande de serveur',
+            projects: 'Projets',
+            reviews: 'Avis',
+            faq: 'FAQ',
+            contact: 'Contact'
+        };
+        const label = mapLabels[sectionId] || 'Accueil';
+        $('#currentSectionLabel').textContent = label;
+    }
+
+    /**
+     * Ajoute un léger effet de clic sur les boutons.
+     * @param {HTMLButtonElement} button
+     */
+    function attachClickAnimation(button) {
+        button.addEventListener('click', () => {
+            button.style.transform = 'scale(0.97) translateY(1px)';
+            setTimeout(() => {
+                button.style.transform = '';
+            }, 120);
+        });
+    }
+
+    /**
+     * Réinitialise les messages d'erreur pour un tableau d'ID.
+     * @param {string[]} errorIds
+     */
+    function clearErrors(errorIds) {
+        errorIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '';
+        });
+    }
+
+    /**
+     * Valide un champ texte obligatoire.
+     * @param {HTMLInputElement|HTMLTextAreaElement} field
+     * @param {HTMLElement} errorEl
+     * @param {string} message
+     * @returns {boolean}
+     */
+    function validateRequiredText(field, errorEl, message) {
+        if (!field.value.trim()) {
+            errorEl.textContent = message;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Ouvre un lien dans un nouvel onglet (avec un minimum de contrôle).
+     * @param {string} url
+     */
+    function openLink(url) {
+        window.open(url, '_blank', 'noopener');
+    }
+
+    // ===============================
+    // NAVIGATION SPA
+    // ===============================
+
+    /**
+     * Initialisation de la navigation.
+     */
+    function initNavigation() {
+        // Navigation via la sidebar
+        $$('.nav-link[data-section]').forEach(link => {
+            link.addEventListener('click', () => {
+                const section = link.getAttribute('data-section');
+                showSection(section);
+                // Fermer la sidebar sur mobile pour plus de confort
+                if (window.innerWidth <= 960) {
+                    $('#sidebar').classList.remove('open');
+                }
+            });
+        });
+
+        // Raccourcis
+        $('#shortcutCreateBot').addEventListener('click', () => showSection('bot'));
+        $('#shortcutRequestServer').addEventListener('click', () => showSection('server'));
+
+        // Boutons de l'entête
+        $('#btnTopCreateBot').addEventListener('click', () => showSection('bot'));
+        $('#btnTopRequestServer').addEventListener('click', () => showSection('server'));
+
+        // Boutons de la home
+        $('#heroCreateBotBtn').addEventListener('click', () => showSection('bot'));
+        $('#heroRequestServerBtn').addEventListener('click', () => showSection('server'));
+
+        // Boutons en bas de la page fonctionnalités
+        $('#featuresToBotBtn').addEventListener('click', () => showSection('bot'));
+        $('#featuresToServerBtn').addEventListener('click', () => showSection('server'));
+
+        // Bouton pour le Developer Portal
+        $('#openDiscordPortalBtn').addEventListener('click', () => {
+            openLink('https://discord.com/developers/applications');
+        });
+
+        // Gestion du menu mobile
+        const sidebarToggle = $('#sidebarToggle');
+        const sidebar = $('#sidebar');
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
+
+    // ===============================
+    // GÉNÉRATEUR OAUTH2
+    // ===============================
+
+    /**
+     * Génère une URL d'invitation OAuth2 pour un bot Discord.
+     */
+    function generateOAuthUrl() {
+        const clientIdInput = $('#clientIdInput');
+        const clientIdError = $('#clientIdError');
+        const scopeBot = $('#scopeBot');
+        const scopeCommands = $('#scopeCommands');
+        const permissionsSelect = $('#permissionsSelect');
+        const permissionsValueInput = $('#permissionsValue');
+        const redirectUriInput = $('#redirectUriInput');
+        const output = $('#oauthUrlOutput');
+
+        clientIdError.textContent = '';
+        output.value = '';
+
+        const clientId = clientIdInput.value.trim();
+        if (!clientId || !/^[0-9]{15,20}$/.test(clientId)) {
+            clientIdError.textContent = 'Veuillez saisir un ID client valide (15 à 20 chiffres).';
+            return;
+        }
+
+        // Construction des scopes
+        const scopes = [];
+        if (scopeBot.checked) scopes.push('bot');
+        if (scopeCommands.checked) scopes.push('applications.commands');
+
+        if (scopes.length === 0) {
+            clientIdError.textContent = 'Au moins un scope doit être sélectionné.';
+            return;
+        }
+
+        // Permissions
+        let permissions = permissionsValueInput.value.trim();
+        if (!permissions || Number(permissions) < 0) {
+            permissions = permissionsSelect.value;
+            permissionsValueInput.value = permissions;
+        }
+
+        const params = new URLSearchParams();
+        params.set('client_id', clientId);
+        params.set('scope', scopes.join(' '));
+        params.set('permissions', permissions);
+
+        const redirectUri = redirectUriInput.value.trim();
+        if (redirectUri) {
+            params.set('redirect_uri', redirectUri);
+            params.set('response_type', 'code');
+        }
+
+        const url = `https://discord.com/api/oauth2/authorize?${params.toString()}`;
+        output.value = url;
+    }
+
+    /**
+     * Initialise les interactions du générateur OAuth2.
+     */
+    function initOAuthGenerator() {
+        const permissionsSelect = $('#permissionsSelect');
+        const permissionsValueInput = $('#permissionsValue');
+
+        permissionsSelect.addEventListener('change', () => {
+            permissionsValueInput.value = permissionsSelect.value;
+        });
+
+        $('#btnGenerateOAuth').addEventListener('click', generateOAuthUrl);
+
+        $('#btnResetOAuth').addEventListener('click', () => {
+            $('#clientIdInput').value = '';
+            $('#clientIdError').textContent = '';
+            $('#scopeBot').checked = true;
+            $('#scopeCommands').checked = true;
+            permissionsSelect.value = '268437520';
+            permissionsValueInput.value = '268437520';
+            $('#redirectUriInput').value = '';
+            $('#oauthUrlOutput').value = '';
+        });
+    }
+
+    // ===============================
+    // FORMULAIRE DEMANDE DE SERVEUR
+    // ===============================
+
+    // Tableau en mémoire pour stocker les demandes de serveur (démonstration)
+    const serverRequests = [];
+
+    /**
+     * Valide le formulaire de demande de serveur, stocke la demande et met à jour le récapitulatif.
+     * @param {SubmitEvent} e
+     */
+    function handleServerRequestSubmit(e) {
+        e.preventDefault();
+
+        const name = $('#serverName');
+        const theme = $('#serverTheme');
+        const objective = $('#serverObjective');
+        const members = $('#serverMembers');
+        const style = $('#serverStyle');
+        const botsNeeded = $('#botsNeeded');
+        const botsType = $('#botsType');
+        const description = $('#serverDescription');
+
+        clearErrors([
+            'serverNameError',
+            'serverThemeError',
+            'serverObjectiveError',
+            'serverMembersError',
+            'serverStyleError',
+            'botsTypeError',
+            'serverDescriptionError'
+        ]);
+
+        let isValid = true;
+
+        if (!validateRequiredText(name, $('#serverNameError'), 'Le nom du serveur est obligatoire.')) isValid = false;
+        if (!validateRequiredText(theme, $('#serverThemeError'), 'Le thème du serveur est obligatoire.')) isValid = false;
+
+        if (!objective.value) {
+            $('#serverObjectiveError').textContent = 'Veuillez sélectionner un objectif.';
+            isValid = false;
+        }
+
+        const membersValue = parseInt(members.value, 10);
+        if (isNaN(membersValue) || membersValue < 1) {
+            $('#serverMembersError').textContent = 'Veuillez saisir un nombre de membres valide.';
+            isValid = false;
+        }
+
+        if (!style.value) {
+            $('#serverStyleError').textContent = 'Veuillez sélectionner un style.';
+            isValid = false;
+        }
+
+        if (botsNeeded.checked && !botsType.value.trim()) {
+            $('#botsTypeError').textContent = 'Précise au moins un type de bot souhaité.';
+            isValid = false;
+        }
+
+        if (!validateRequiredText(description, $('#serverDescriptionError'), 'La description est obligatoire.')) isValid = false;
+
+        if (!isValid) return;
+
+        // Construction de l'objet demande
+        const request = {
+            id: Date.now(),
+            name: name.value.trim(),
+            theme: theme.value.trim(),
+            objective: objective.value,
+            members: membersValue,
+            style: style.value,
+            botsNeeded: botsNeeded.checked,
+            botsType: botsType.value.trim() || 'Non spécifié',
+            description: description.value.trim(),
+            createdAt: new Date().toLocaleString()
+        };
+
+        serverRequests.push(request);
+        displayLastServerRequest();
+        $('#serverFormSuccess').textContent = 'Ta demande a été enregistrée (stockage local).';
+
+        // Nettoyage léger des champs (on garde le style/objective pour confort)
+        name.value = '';
+        theme.value = '';
+        members.value = '';
+        botsNeeded.checked = false;
+        botsType.value = '';
+        description.value = '';
+
+        setTimeout(() => {
+            $('#serverFormSuccess').textContent = '';
+        }, 4500);
+    }
+
+    /**
+     * Affiche le récapitulatif de la dernière demande de serveur.
+     */
+    function displayLastServerRequest() {
+        const summaryBox = $('#serverRequestSummary');
+        const content = $('#serverRequestSummaryContent');
+
+        if (serverRequests.length === 0) {
+            summaryBox.style.display = 'none';
+            return;
+        }
+
+        const last = serverRequests[serverRequests.length - 1];
+        summaryBox.style.display = 'block';
+
+        content.innerHTML = `
+            <div class="request-summary-item">
+                <span>Nom du serveur</span>
+                <span><strong>${last.name}</strong></span>
+            </div>
+            <div class="request-summary-item">
+                <span>Thème</span>
+                <span>${last.theme}</span>
+            </div>
+            <div class="request-summary-item">
+                <span>Objectif</span>
+                <span>${last.objective}</span>
+            </div>
+            <div class="request-summary-item">
+                <span>Membres estimés</span>
+                <span>${last.members}</span>
+            </div>
+            <div class="request-summary-item">
+                <span>Style</span>
+                <span>${last.style}</span>
+            </div>
+            <div class="request-summary-item">
+                <span>Besoins en bots</span>
+                <span>${last.botsNeeded ? 'Oui (' + last.botsType + ')' : 'Non'}</span>
+            </div>
+            <div class="request-summary-item">
+                <span>Date de création</span>
+                <span>${last.createdAt}</span>
+            </div>
+            <div class="mt-2 text-xs">
+                <strong>Description détaillée :</strong><br>
+                ${last.description.replace(/\n/g, '<br>')}
+            </div>
+        `;
+    }
+
+    /**
+     * Initialise le formulaire de demande de serveur.
+     */
+    function initServerForm() {
+        $('#serverRequestForm').addEventListener('submit', handleServerRequestSubmit);
+
+        $('#resetServerFormBtn').addEventListener('click', () => {
+            $('#serverRequestForm').reset();
+            clearErrors([
+                'serverNameError',
+                'serverThemeError',
+                'serverObjectiveError',
+                'serverMembersError',
+                'serverStyleError',
+                'botsTypeError',
+                'serverDescriptionError'
+            ]);
+            $('#serverFormSuccess').textContent = '';
+        });
+    }
+
+    // ===============================
+    // PAGE PROJETS
+    // ===============================
+
+    const projects = [];
+
+    /**
+     * Rend la liste des projets dans la page.
+     */
+    function renderProjects() {
+        const container = $('#projectList');
+        container.innerHTML = '';
+
+        if (projects.length === 0) {
+            container.innerHTML = '<p class="text-xs muted">Aucun projet pour le moment. Ajoute ta première idée via le formulaire.</p>';
+            return;
+        }
+
+        projects.forEach(project => {
+            const article = document.createElement('article');
+            article.className = 'project-item';
+            article.innerHTML = `
+                <div>
+                    <div class="project-title">${project.name}</div>
+                    <div class="project-meta">
+                        <span class="tag tag-primary">${project.type}</span>
+                        <span class="tag">${project.tech || 'Technologies non précisées'}</span>
+                    </div>
+                </div>
+                <div class="project-description">
+                    ${project.description.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            container.appendChild(article);
+        });
+    }
+
+    /**
+     * Gestion du formulaire de nouveaux projets.
+     * @param {SubmitEvent} e
+     */
+    function handleProjectSubmit(e) {
+        e.preventDefault();
+
+        const name = $('#projectName');
+        const type = $('#projectType');
+        const tech = $('#projectTech');
+        const description = $('#projectDescription');
+
+        clearErrors([
+            'projectNameError',
+            'projectTypeError',
+            'projectDescriptionError'
+        ]);
+
+        let isValid = true;
+        if (!validateRequiredText(name, $('#projectNameError'), 'Le nom du projet est obligatoire.')) isValid = false;
+        if (!type.value) {
+            $('#projectTypeError').textContent = 'Veuillez sélectionner un type de projet.';
+            isValid = false;
+        }
+        if (!validateRequiredText(description, $('#projectDescriptionError'), 'La description du projet est obligatoire.')) isValid = false;
+
+        if (!isValid) return;
+
+        const project = {
+            id: Date.now(),
+            name: name.value.trim(),
+            type: type.value,
+            tech: tech.value.trim(),
+            description: description.value.trim()
+        };
+
+        projects.push(project);
+        renderProjects();
+
+        $('#projectFormSuccess').textContent = 'Projet ajouté à ta liste locale.';
+        name.value = '';
+        type.value = '';
+        tech.value = '';
+        description.value = '';
+
+        setTimeout(() => {
+            $('#projectFormSuccess').textContent = '';
+        }, 3500);
+    }
+
+    /**
+     * Initialise la page projets.
+     */
+    function initProjects() {
+        $('#projectForm').addEventListener('submit', handleProjectSubmit);
+        $('#resetProjectFormBtn').addEventListener('click', () => {
+            $('#projectForm').reset();
+            clearErrors(['projectNameError', 'projectTypeError', 'projectDescriptionError']);
+            $('#projectFormSuccess').textContent = '';
+        });
+
+        // Rendu initial (liste vide)
+        renderProjects();
+    }
+
+    // ===============================
+    // PAGE AVIS
+    // ===============================
+
+    const reviews = [
+        {
+            id: 1,
+            author: 'HexaByte#2039',
+            rating: 5,
+            text: 'Super concept ! Le formulaire de serveurs est assez détaillé pour cadrer un projet communautaire sérieux.',
+            date: 'Aujourd’hui'
+        },
+        {
+            id: 2,
+            author: 'StudioNova',
+            rating: 4,
+            text: 'L’idée de centraliser bots, serveurs et projets est excellente. Hâte de voir une version connectée à un backend.',
+            date: 'Hier'
+        }
+    ];
+
+    /**
+     * Génére une chaîne d'étoiles pour un rating.
+     * @param {number} rating
+     * @returns {string}
+     */
+    function renderStars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            stars += i <= rating ? '★' : '☆';
+        }
+        return stars;
+    }
+
+    /**
+     * Rend la liste des avis.
+     */
+    function renderReviews() {
+        const container = $('#reviewList');
+        container.innerHTML = '';
+
+        reviews.forEach(review => {
+            const card = document.createElement('article');
+            card.className = 'review-card';
+            card.innerHTML = `
+                <div class="review-header">
+                    <div class="review-author">${review.author}</div>
+                    <div class="review-stars">${renderStars(review.rating)}</div>
+                </div>
+                <div class="review-text">${review.text.replace(/\n/g, '<br>')}</div>
+                <div class="review-meta">
+                    Note : ${review.rating}/5 · ${review.date}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    /**
+     * Initialise le formulaire d'avis.
+     */
+    function initReviews() {
+        const ratingInput = $('#reviewRatingInput');
+        const ratingHidden = $('#reviewRating');
+
+        // Sélection de la note par étoiles
+        ratingInput.querySelectorAll('span').forEach(star => {
+            star.addEventListener('click', () => {
+                const value = parseInt(star.getAttribute('data-value'), 10);
+                ratingHidden.value = String(value);
+                ratingInput.querySelectorAll('span').forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'), 10);
+                    s.classList.toggle('active', starValue <= value);
+                });
+            });
+        });
+
+        // Initialiser note à 5
+        ratingInput.querySelectorAll('span').forEach(s => {
+            const starValue = parseInt(s.getAttribute('data-value'), 10);
+            if (starValue <= 5) s.classList.add('active');
+        });
+
+        $('#reviewForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const author = $('#reviewAuthor');
+            const rating = parseInt($('#reviewRating').value, 10);
+            const text = $('#reviewText');
+
+            clearErrors(['reviewAuthorError', 'reviewRatingError', 'reviewTextError']);
+
+            let isValid = true;
+            if (!validateRequiredText(author, $('#reviewAuthorError'), 'Le nom/pseudo est obligatoire.')) isValid = false;
+
+            if (!rating || rating < 1 || rating > 5) {
+                $('#reviewRatingError').textContent = 'Merci de sélectionner une note entre 1 et 5.';
+                isValid = false;
+            }
+
+            if (!validateRequiredText(text, $('#reviewTextError'), 'Merci de détailler un minimum ton avis.')) isValid = false;
+
+            if (!isValid) return;
+
+            reviews.unshift({
+                id: Date.now(),
+                author: author.value.trim(),
+                rating,
+                text: text.value.trim(),
+                date: 'À l’instant'
+            });
+
+            renderReviews();
+            $('#reviewFormSuccess').textContent = 'Merci pour ton avis (stocké localement).';
+
+            author.value = '';
+            text.value = '';
+
+            setTimeout(() => {
+                $('#reviewFormSuccess').textContent = '';
+            }, 3500);
+        });
+
+        $('#resetReviewFormBtn').addEventListener('click', () => {
+            $('#reviewForm').reset();
+            clearErrors(['reviewAuthorError', 'reviewRatingError', 'reviewTextError']);
+            $('#reviewFormSuccess').textContent = '';
+        });
+
+        renderReviews();
+    }
+
+    // ===============================
+    // FAQ INTERACTIVE
+    // ===============================
+
+    const faqItems = [
+        {
+            question: 'DevCore crée-t-il réellement des bots et des serveurs Discord ?',
+            answer: 'Dans cette version, tout se passe côté client : aucun bot réel n’est créé et aucun serveur Discord n’est modifié. DevCore sert de démonstration UX et de squelette technique pour une future plateforme complète.'
+        },
+        {
+            question: 'Comment seraient gérés les bots dans une version de production ?',
+            answer: 'Les bots seraient déployés à partir de dépôts GitHub, reliés à une CI/CD (par ex. GitHub Actions) et hébergés sur des workers ou serveurs dédiés. Les tokens seraient stockés de manière sécurisée (vault, secrets, etc.).'
+        },
+        {
+            question: 'Mes tokens Discord sont-ils stockés sur DevCore ?',
+            answer: 'Non. DevCore ne manipule ni ne stocke aucun token. Le générateur OAuth2 ne demande que l’ID client et génère un lien côté navigateur.'
+        },
+        {
+            question: 'Comment fonctionne la demande de serveur ?',
+            answer: 'Le formulaire est validé côté client et la demande est enregistrée dans la mémoire de la session (JavaScript). Dans une vraie plateforme, cette demande serait envoyée à un backend ou un système de tickets.'
+        },
+        {
+            question: 'Quels sont les délais typiques pour un serveur ou un bot ?',
+            answer: 'Dans un scénario réel, compter de quelques heures à quelques jours selon la complexité (permissions, modération, intégrations externes, scalabilité…).'
+        },
+        {
+            question: 'La plateforme est-elle sécurisée ?',
+            answer: 'Cette démonstration ne traite pas de données sensibles et tout reste sur ton navigateur. Une version finale utiliserait HTTPS, stockage chiffré des secrets et revue de sécurité régulière.'
+        },
+        {
+            question: 'Puis-je connecter DevCore à mon propre backend ?',
+            answer: 'Oui, l’architecture SPA actuelle est pensée pour consommer des APIs. Tu peux remplacer les simulations locales par des appels HTTP (fetch) vers ton propre backend.'
+        },
+        {
+            question: 'DevCore est-il affilié à Discord ?',
+            answer: 'Non. DevCore est un concept de plateforme de services pour Discord, indépendant et non affilié officiellement à Discord.'
+        }
+    ];
+
+    /**
+     * Crée un élément FAQ.
+     * @param {Object} item
+     * @param {string} item.question
+     * @param {string} item.answer
+     * @returns {HTMLElement}
+     */
+    function createFaqElement(item) {
+        const wrapper = document.createElement('article');
+        wrapper.className = 'faq-item';
+
+        const question = document.createElement('div');
+        question.className = 'faq-question';
+        question.innerHTML = `
+            <span>${item.question}</span>
+            <div class="faq-toggle">›</div>
+        `;
+
+        const answer = document.createElement('div');
+        answer.className = 'faq-answer';
+        answer.textContent = item.answer;
+
+        question.addEventListener('click', () => {
+            const isOpen = wrapper.classList.contains('open');
+            // Fermer les autres
+            $$('#faqList .faq-item').forEach(it => it.classList.remove('open'));
+            // Ouvrir/fermer celui-ci
+            if (!isOpen) {
+                wrapper.classList.add('open');
+            } else {
+                wrapper.classList.remove('open');
+            }
+        });
+
+        wrapper.appendChild(question);
+        wrapper.appendChild(answer);
+        return wrapper;
+    }
+
+    /**
+     * Initialise la FAQ interactive.
+     */
+    function initFaq() {
+        const container = $('#faqList');
+        faqItems.forEach(item => {
+            container.appendChild(createFaqElement(item));
+        });
+    }
+
+    // ===============================
+    // FORMULAIRE CONTACT
+    // ===============================
+
+    /**
+     * Valide une adresse e-mail simple.
+     * @param {string} email
+     * @returns {boolean}
+     */
+    function isValidEmail(email) {
+        // Validation simple pour démo
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    /**
+     * Initialise le formulaire de contact.
+     */
+    function initContactForm() {
+        $('#contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = $('#contactName');
+            const email = $('#contactEmail');
+            const reason = $('#contactReason');
+            const message = $('#contactMessage');
+
+            clearErrors([
+                'contactNameError',
+                'contactEmailError',
+                'contactReasonError',
+                'contactMessageError'
+            ]);
+
+            let isValid = true;
+            if (!validateRequiredText(name, $('#contactNameError'), 'Le nom/pseudo est obligatoire.')) isValid = false;
+
+            if (!validateRequiredText(email, $('#contactEmailError'), 'L’e-mail est obligatoire.')) {
+                isValid = false;
+            } else if (!isValidEmail(email.value.trim())) {
+                $('#contactEmailError').textContent = 'Veuillez saisir une adresse e-mail valide.';
+                isValid = false;
+            }
+
+            if (!reason.value) {
+                $('#contactReasonError').textContent = 'Merci de sélectionner un sujet.';
+                isValid = false;
+            }
+
+            if (!validateRequiredText(message, $('#contactMessageError'), 'Merci de détailler ton message.')) isValid = false;
+
+            if (!isValid) return;
+
+            // Dans une vraie appli : envoi vers un backend
+            $('#contactFormSuccess').textContent = 'Message "envoyé" (simulation locale). Merci pour ton retour !';
+            setTimeout(() => {
+                $('#contactFormSuccess').textContent = '';
+            }, 4000);
+
+            // On ne reset pas totalement pour permettre la correction, mais on pourrait
+        });
+
+        $('#resetContactFormBtn').addEventListener('click', () => {
+            $('#contactForm').reset();
+            clearErrors([
+                'contactNameError',
+                'contactEmailError',
+                'contactReasonError',
+                'contactMessageError'
+            ]);
+            $('#contactFormSuccess').textContent = '';
+        });
+    }
+
+    // ===============================
+    // MODALE JOURNAL (CHANGELOG)
+    // ===============================
+
+    /**
+     * Initialise la modale Changelog.
+     */
+    function initChangelogModal() {
+        const modal = $('#changelogModal');
+        const openBtn = $('#openChangelogBtn');
+        const closeBtn = $('#closeChangelogBtn');
+        const okBtn = $('#changelogOkBtn');
+        const laterBtn = $('#changelogLaterBtn');
+
+        function openModal() {
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+
+        openBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        okBtn.addEventListener('click', closeModal);
+        laterBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // ===============================
+    // INITIALISATION GLOBALE
+    // ===============================
+
+    /**
+     * Ajoute des animations de clic à tous les boutons .btn.
+     */
+    function initButtonAnimations() {
+        $$('button').forEach(btn => attachClickAnimation(btn));
+    }
+
+    /**
+     * Entrée principale de l'application.
+     */
+    function initApp() {
+        initNavigation();
+        initOAuthGenerator();
+        initServerForm();
+        initProjects();
+        initReviews();
+        initFaq();
+        initContactForm();
+        initChangelogModal();
+        initButtonAnimations();
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>
